@@ -29,7 +29,7 @@ shinyUI(
       sidebarMenu(
         menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
         menuItem("Market Analysis", tabName = "widgets", icon = icon("balance-scale")),
-        menuItem("Overall Companies", tabName = "DataOverallCompanies", icon = icon("bars")),
+        menuItem("Overall by Companies", tabName = "DataOverallCompanies", icon = icon("bars")),
         # menuItem("Price Analysis", tabName = "OppAnalysis", icon = icon("inr")),
         menuItem("Data View", tabName = "DataView", icon = icon("th")),
         menuItem("Elevator Volumes (ALL)", tabName = "ElevVolumes", icon = icon("map-marker")),
@@ -76,7 +76,16 @@ shinyUI(
                   box(title = "Overall",width=12,status = "warning", solidHeader = TRUE,collapsible = TRUE,collapsed = FALSE,
                       dataTableOutput("tabOverAllMarket"))
         )# Third tab content ends
-        )
+        ),
+        
+        #### DF summary ########
+        tabItem(tabName = "missingSummary",
+                fluidRow(
+                  box(title = "Missing Data Summary",width=12,status = "warning", solidHeader = TRUE,collapsible = FALSE,collapsed = FALSE,
+                      dataTableOutput("tabmissingSummary"))
+                )
+               )
+        
         )
       )#dashboard Body Close
   )#dashboard page close
