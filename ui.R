@@ -21,6 +21,8 @@
 # install.packages("threejs")
 # install.packages("DT")
 # install.packages("shiny")
+# install.packages("tidyverse")
+# install.packages('addinslist') 
 
 shinyUI(
   dashboardPage(
@@ -28,7 +30,7 @@ shinyUI(
     dashboardSidebar(
       sidebarMenu(
         menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-        menuItem("Market Analysis", tabName = "widgets", icon = icon("balance-scale")),
+        menuItem("Market Analysis", tabName = "MarktAnalysis", icon = icon("balance-scale")),
         menuItem("Overall by Companies", tabName = "DataOverallCompanies", icon = icon("bars")),
         # menuItem("Price Analysis", tabName = "OppAnalysis", icon = icon("inr")),
         menuItem("Data View", tabName = "DataView", icon = icon("th")),
@@ -56,14 +58,33 @@ shinyUI(
         #          valueBoxOutput("TotalOpp",width=6)
         #          # ,
         #          # valueBoxOutput("ClosedSuccess"),
-        #          
+        # 
         #         # valueBoxOutput("ClosedSuccessPer")
         #          ),#fluidrow ends
         #         fluidRow(
         #           box(plotlyOutput("DashSuccessChart", height = 350),status = "success"),
         #           box(plotlyOutput("TopCompetitor", height = 350),status = "warning")
         #         )#Fluid row ends
-        # ),
+        # ), 
+        tabItem(tabName = "MarktAnalysis",
+                fluidRow(
+                 box(selectInput(inputId = "SelYear","Year",ValTransactionYear,multiple = FALSE)),
+                
+                 box(selectInput(inputId = "SelMonth","Month",ValTransactionMonth,multiple = FALSE))
+                 # valueBoxOutput("ClosedSuccess"),
+
+                # valueBoxOutput("ClosedSuccessPer")
+                 ),
+                 fluidRow(
+              
+                 valueBoxOutput("HighIncome",width=6),
+               
+                 valueBoxOutput("HighExp",width=6)
+
+                # valueBoxOutput("ClosedSuccessPer")
+                 )
+        ),
+          
         tabItem(tabName = "DataView",
                 fluidRow(
                   box(title = "Overall",width=12,status = "warning", solidHeader = TRUE,collapsible = TRUE,collapsed = FALSE,

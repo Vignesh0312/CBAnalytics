@@ -22,6 +22,43 @@ shinyServer(function(input, output,session) {
     #   arrange(desc(Region))
   })
   
+    #Month Based on Year selected
+  observe({
+    dt=AccDB %>%
+      filter(TransactionYear==input$SelYear)
+    # if (exists("ValTransactionMonth"))
+    # {
+    # rm(ValTransactionMonth)
+    # }
+    ValTransactionMonth=unique(dt$TransactionMonth[!is.na(dt$TransactionMonth)])
+  })
+   reactdataCon=reactive({
+     ValTransactionMonth=AccDB%>%
+       filter(TransactionYear==input$ValTransactionYear) %>%
+       unique(TransactionMonth[!is.na(TransactionMonth)])
+       
+       
+  })
+  
+  output$HighIncome <- renderValueBox({
+    valueBox(
+      paste0(max(AccDB$Amount), " EUR"), paste0("Highest Income ",AccDB$Company[match(max(AccDB$Amount),AccDB$Amount)]), icon = icon("list"),
+      # paste0("2254", "EUR"), "Highest Income", icon = icon("list"),
+      color = "purple"
+    )
+  })
+  
+  output$HighExp <- renderValueBox({
+    dt=reactdataAccountDB()%>%
+      filter(TransactionYear==input$SelYear)%>%
+      filter(TransactionMonth==input$SelMonth)
+    valueBox(
+      paste0(min(dt$Amount,na.rm = TRUE), " EUR"), paste0("Highest Expense ",dt$Company[match(min(dt$Amount),dt$Amount)]), icon = icon("list"),
+      # paste0("2254", "EUR"), "Highest Income", icon = icon("list"),
+      color = "purple"
+    )
+  })
+  
   output$tabOverAllMarket = renderDataTable({
     Dt=reactdataAccountDB()
     Dt%>%
@@ -58,5 +95,17 @@ shinyServer(function(input, output,session) {
     
     datatable(freq.table.miss)
   })
+  
+  output$plot2<-renderPlot({
+    
+    Dt=reactdataAccountDB() %>%
+      filter(AccDB$TransactionYear==input$SelYear)%>%
+    
+      ggplot(Dt, aes(displ, hwy, colour = class)) + 
+      geom_point()
+  })
+ 
+
+  
   
 })

@@ -12,6 +12,7 @@ suppressMessages(library(threejs))
 suppressMessages(library(DT))
 suppressMessages(library(shiny))
 suppressMessages(library(lubridate))
+suppressMessages(library(tidyverse))
 
 
 
@@ -42,6 +43,8 @@ if (!exists("AccDB"))
   AccDB <- rbindlist(temp)
   AccDB= unique(AccDB)
   
+
+  
   #Change Dates
   as.Date(AccDB$`Transaction date`, "%d.%m.%Y")
   as.Date(AccDB$`Value date`, "%d.%m.%Y")
@@ -50,7 +53,15 @@ if (!exists("AccDB"))
   AccDB$TransactionMonth= month(tempDate,label = TRUE)
   rm(tempDate)
   #
+  #Estimate Inputs
+  ValTransactionYear=unique(AccDB$TransactionYear[!is.na(AccDB$TransactionYear)])
+  ValTransactionMonth=c("Jan","Feb","Mar","Apr","May","June","Jul","Aug","Sep","Oct","Nov","Dec")
+  #
+  
+ 
+  # To remove mentioned columns
   AccDB[, c("Account of initiator","IBAN of account of initiator","Bank code of account of initiator"):=NULL]
+  #
   AccDB$Company= AccDB$`Booking text`
   AccDB$Company=ifelse(grepl("*Interest income*",AccDB$Category,ignore.case = TRUE),'Commerz Bank',AccDB$Company)
   AccDB$Company=ifelse(grepl("*Bank Fees & Service Fees*",AccDB$Category,ignore.case = TRUE),'Commerz Bank',AccDB$Company)
