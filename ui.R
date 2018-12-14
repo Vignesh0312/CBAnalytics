@@ -29,7 +29,7 @@ shinyUI(
     dashboardHeader(title = "Chimbu Account Reporting"),
     dashboardSidebar(
       sidebarMenu(
-        menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+        # menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
         menuItem("Market Analysis", tabName = "MarktAnalysis", icon = icon("balance-scale")),
         menuItem("Overall by Companies", tabName = "DataOverallCompanies", icon = icon("bars")),
         # menuItem("Price Analysis", tabName = "OppAnalysis", icon = icon("inr")),
@@ -82,7 +82,10 @@ shinyUI(
                  valueBoxOutput("HighExp",width=6)
 
                 # valueBoxOutput("ClosedSuccessPer")
-                 )
+                 ),
+                fluidRow(
+                  column(6,plotlyOutput("MonthlyTrack",width = 600))
+                )
         ),
           
         tabItem(tabName = "DataView",

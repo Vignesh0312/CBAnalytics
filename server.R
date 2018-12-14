@@ -22,6 +22,11 @@ shinyServer(function(input, output,session) {
     #   arrange(desc(Region))
   })
   
+  reactdataAccDB_ByYearMon=reactive({
+    AccDB%>%
+      filter(TransactionYear==input$SelYear)%>%
+      filter(TransactionMonth==input$SelMonth)
+  })
     #Month Based on Year selected
   observe({
     dt=AccDB %>%
@@ -36,22 +41,19 @@ shinyServer(function(input, output,session) {
      ValTransactionMonth=AccDB%>%
        filter(TransactionYear==input$ValTransactionYear) %>%
        unique(TransactionMonth[!is.na(TransactionMonth)])
-       
-       
   })
-  
+  ######################################## Market Analysis ############################################
   output$HighIncome <- renderValueBox({
+    dt=reactdataAccDB_ByYearMon()
     valueBox(
-      paste0(max(AccDB$Amount), " EUR"), paste0("Highest Income ",AccDB$Company[match(max(AccDB$Amount),AccDB$Amount)]), icon = icon("list"),
+      paste0(max(dt$Amount), " EUR"), paste0("Highest Income ",dt$Company[match(max(dt$Amount),dt$Amount)]), icon = icon("list"),
       # paste0("2254", "EUR"), "Highest Income", icon = icon("list"),
       color = "purple"
     )
   })
-  
+
   output$HighExp <- renderValueBox({
-    dt=reactdataAccountDB()%>%
-      filter(TransactionYear==input$SelYear)%>%
-      filter(TransactionMonth==input$SelMonth)
+    dt=reactdataAccDB_ByYearMon()
     valueBox(
       paste0(min(dt$Amount,na.rm = TRUE), " EUR"), paste0("Highest Expense ",dt$Company[match(min(dt$Amount),dt$Amount)]), icon = icon("list"),
       # paste0("2254", "EUR"), "Highest Income", icon = icon("list"),
@@ -59,6 +61,23 @@ shinyServer(function(input, output,session) {
     )
   })
   
+  output$MonthlyTrack<-renderPlotly({
+  
+    #Case 1,)
+      dt=reactdataAccDB_ByYearMon()%>%
+        filter(Category=="Expense") %>%
+        filter(!grepl("*Cash*",TransactionType,ignore.case = TRUE)) %>%
+        filter(Company!='G+B Housing' & Company!='India Citibank' ) %>%
+        select(TransactionDate,Amount,Company) %>%
+        group_by(TransactionDate)
+      #     plot_ly(dt, x = dt$Company, y = dt$Amount, name = 'MonthlyTrack', type = 'scatter')
+   
+   plot_ly() %>%
+      add_trace(dt, labels=dt$Company, type='pie', values=dt$Amount) %>%
+      layout(p, title=paste0("Expense for ",input$SelMonth, " ", input$SelYear))
+    
+  })
+  ######################################## Overall Companies #####################################################
   output$tabOverAllMarket = renderDataTable({
     Dt=reactdataAccountDB()
     Dt%>%
@@ -71,7 +90,7 @@ shinyServer(function(input, output,session) {
     #columns=c("Region","Load","Speed","cnt")
     datatable(Dt,filter="bottom",class = 'cell-border stripe',rownames = FALSE)
   })
-
+  ##################################### Data View #####################################################
   output$tabOverAllCompanies = renderDataTable({
     Dt=reactdataAccountDB()
     
@@ -79,7 +98,7 @@ shinyServer(function(input, output,session) {
     #columns=c("Region","Load","Speed","cnt")
     datatable(Dt,filter="bottom",class = 'cell-border stripe',rownames = FALSE)
   })
-  
+  ##################################### Missing items summary View #####################################################
   output$tabmissingSummary = renderDataTable({
     Dt=data.frame(AccDB)
     missing.summary <- sapply(Dt, function(x) sum(is.na(x))) 
@@ -95,17 +114,5 @@ shinyServer(function(input, output,session) {
     
     datatable(freq.table.miss)
   })
-  
-  output$plot2<-renderPlot({
-    
-    Dt=reactdataAccountDB() %>%
-      filter(AccDB$TransactionYear==input$SelYear)%>%
-    
-      ggplot(Dt, aes(displ, hwy, colour = class)) + 
-      geom_point()
-  })
- 
-
-  
   
 })
