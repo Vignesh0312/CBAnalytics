@@ -42,13 +42,17 @@ if (!exists("AccDB"))
   files <- list.files(path ="D:/STUDIES/01_DataAnalytics/CBAnalytics/Data",pattern = ".CSV")
   temp <- lapply(files, fread,sep=",",na.strings="")
   AccDB <- rbindlist(temp)
-  AccDB= unique(AccDB)
+  #Column based duplicate remove because special CHARS in booking text makes difference
+  
   # Remove rows with 0
   AccDB<-AccDB[!(AccDB$Amount==0),]
   #Change column names
-  OldNames=c("Transaction date","Value date","Transaction type","Booking text")
-  NewNames=c("TransactionDate","ValueDate","TransactionType","BookingText")
+  OldNames=c("Transaction date","Value date","Transaction type","Booking text",'Category')
+  NewNames=c("TransactionDate","ValueDate","TransactionType","BookingText",'Segment')
   colnames(AccDB)[which(colnames(AccDB) %in% OldNames )] <- NewNames
+  AccDB = AccDB %>%
+    distinct(TransactionDate,ValueDate,Amount,Company, .keep_all = TRUE)
+ 
   #remove temp names
   rm(OldNames,NewNames)
   #
@@ -60,10 +64,9 @@ if (!exists("AccDB"))
   AccDB$TransactionMonth= month(tempDate,label = TRUE)
   rm(tempDate)
   #
-  #Estimate Inputs
-  ValTransactionYear=unique(AccDB$TransactionYear[!is.na(AccDB$TransactionYear)])
-  ValTransactionMonth=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
-  StandardExpenses=c('G+B Housing','India Citibank')
+ 
+  
+  # InsuranceExpenses=
   #
   AccDB$Category=ifelse(AccDB$Amount < 0,'Expense','Income')
   AccDB$Amount=abs(AccDB$Amount)
@@ -78,18 +81,24 @@ if (!exists("AccDB"))
   AccDB$Company=ifelse(grepl("*T.S.*",AccDB$BookingText,ignore.case = TRUE),'T.S.Foods',AccDB$Company)
   AccDB$Company=ifelse(grepl("*KARSTADT*",AccDB$BookingText,ignore.case = TRUE),'KARSTADT',AccDB$Company)
   AccDB$Company=ifelse(grepl("*BVG*",AccDB$BookingText,ignore.case = TRUE),'BVG',AccDB$Company)
+  #BVG Fine
+  AccDB$Company=ifelse(grepl("*Infoscore Forderungsmana*",AccDB$BookingText,ignore.case = TRUE),'BVG',AccDB$Company)
   AccDB$Company=ifelse(grepl("*S Bahn*",AccDB$BookingText,ignore.case = TRUE),'DB',AccDB$Company)
+  AccDB$Company=ifelse(grepl("*DB AUTOMAT*",AccDB$BookingText,ignore.case = TRUE),'DB',AccDB$Company)
+  
   AccDB$Company=ifelse(grepl("*VATTENFALL *",AccDB$BookingText,ignore.case = TRUE),'VATTENFALL',AccDB$Company)
   AccDB$Company=ifelse(grepl("*LIDL*",AccDB$BookingText,ignore.case = TRUE),'LIDL',AccDB$Company)
   AccDB$Company=ifelse(grepl("*ALDI*",AccDB$BookingText,ignore.case = TRUE),'ALDI',AccDB$Company)
   AccDB$Company=ifelse(grepl("*MCDONALD*",AccDB$BookingText,ignore.case = TRUE),'MCDONALD',AccDB$Company)
+  AccDB$Company=ifelse(grepl("*Kaufland*",AccDB$BookingText,ignore.case = TRUE),'KAUFLAND',AccDB$Company)
+  AccDB$Company=ifelse(grepl("*Apotheke*",AccDB$BookingText,ignore.case = TRUE),'APOTHEKE',AccDB$Company)
   AccDB$Company=ifelse(grepl("*GIDA*",AccDB$BookingText,ignore.case = TRUE),'EURO GIDA',AccDB$Company)
   AccDB$Company=ifelse(grepl("*Telefonica Germany GmbH*",AccDB$BookingText,ignore.case = TRUE),'O2 Blau',AccDB$Company)
   AccDB$Company=ifelse(grepl("*AMAZON*",AccDB$BookingText,ignore.case = TRUE),'AMAZON',AccDB$Company)
   AccDB$Company=ifelse(grepl("*9908409001*",AccDB$BookingText,ignore.case = TRUE),'SONY TV EMI',AccDB$Company)
   AccDB$Company=ifelse(grepl("*ENVIVAS*",AccDB$BookingText,ignore.case = TRUE),'TK (ENVIVAS)',AccDB$Company)
   AccDB$Company=ifelse(grepl("*REWE*",AccDB$BookingText,ignore.case = TRUE),'REWE',AccDB$Company)
-  AccDB$Company=ifelse(grepl("*Maria Rosenkranz*",AccDB$BookingText,ignore.case = TRUE),'KITA',AccDB$Company)
+  AccDB$Company=ifelse(grepl("*Kath. Kirchengemeinde*",AccDB$BookingText,ignore.case = TRUE),'KITA',AccDB$Company)
   AccDB$Company=ifelse(grepl("*DEKRA*",AccDB$BookingText,ignore.case = TRUE),'DEKRA',AccDB$Company)
   AccDB$Company=ifelse(grepl("*Schindler*",AccDB$BookingText,ignore.case = TRUE),'Schindler',AccDB$Company)
   AccDB$Company=ifelse(grepl("*DEICHMANN*",AccDB$BookingText,ignore.case = TRUE),'DEICHMANN',AccDB$Company)
@@ -109,12 +118,14 @@ if (!exists("AccDB"))
   AccDB$Company=ifelse(grepl("*LEISTENSCHNEIDER*",AccDB$BookingText,ignore.case = TRUE),'PHOTO STUDIO',AccDB$Company)
   AccDB$Company=ifelse(grepl("*Alphacomm*",AccDB$BookingText,ignore.case = TRUE),'Lyca Recharge',AccDB$Company)
   AccDB$Company=ifelse(grepl("*Prasanna*",AccDB$BookingText,ignore.case = TRUE),'Friends',AccDB$Company)
+  
   AccDB$Company=ifelse(grepl("*Sudhasine*",AccDB$BookingText,ignore.case = TRUE),'Friends',AccDB$Company)
+  
   AccDB$Company=ifelse(grepl("*Arun*",AccDB$BookingText,ignore.case = TRUE),'Friends',AccDB$Company)
   AccDB$Company=ifelse(grepl("*BUVANESWARAN*",AccDB$BookingText,ignore.case = TRUE),'Friends',AccDB$Company)
   AccDB$Company=ifelse(grepl("*Subhas Dandapani*",AccDB$BookingText,ignore.case = TRUE),'Friends',AccDB$Company)
   AccDB$Company=ifelse(grepl("*Reena Devi Sonniya Kuppusamy*",AccDB$BookingText,ignore.case = TRUE),'Friends',AccDB$Company)
-  AccDB$Company=ifelse(grepl("*Ashok*",AccDB$BookingText,ignore.case = TRUE),'Ashok',AccDB$Company)
+  AccDB$Company=ifelse(grepl("*Ashok*",AccDB$BookingText,ignore.case = TRUE),'Friends',AccDB$Company)
   AccDB$Company=ifelse(grepl("*Woolworth*",AccDB$BookingText,ignore.case = TRUE),'Woolworth',AccDB$Company)
   AccDB$Company=ifelse(grepl("*Provinzial*",AccDB$BookingText,ignore.case = TRUE),'Provinzial',AccDB$Company)
   AccDB$Company=ifelse(grepl("*NIRWANA *",AccDB$BookingText,ignore.case = TRUE),'NIRWANA',AccDB$Company)
@@ -131,7 +142,12 @@ if (!exists("AccDB"))
   AccDB$Company=ifelse(grepl("*YELLOW POINT*",AccDB$BookingText,ignore.case = TRUE),'YELLOW POINT',AccDB$Company)
   AccDB$Company=ifelse(grepl("*FedEx*",AccDB$BookingText,ignore.case = TRUE),'FedEx',AccDB$Company)
   AccDB$Company=ifelse(grepl("*ULLRICH*",AccDB$BookingText,ignore.case = TRUE),'ULLRICH',AccDB$Company)
+  AccDB$Company=ifelse(grepl("*RF19X658505321*",AccDB$BookingText,ignore.case = TRUE),'ARD',AccDB$Company)
   AccDB$Company=ifelse(grepl("*RF43X677966775*",AccDB$BookingText,ignore.case = TRUE),'ARD',AccDB$Company)
+  
+  AccDB$Company=ifelse(grepl("*ATHI DEVI ASIA*",AccDB$BookingText,ignore.case = TRUE),'Leinstr. IND SHOP',AccDB$Company)
+  AccDB$Company=ifelse(grepl("*Global Collect BV*",AccDB$BookingText,ignore.case = TRUE),'Air France',AccDB$Company)
+  
   AccDB$Company=ifelse(grepl("*CYBERPORT*",AccDB$BookingText,ignore.case = TRUE),'CYBERPORT',AccDB$Company)
   AccDB$Company=ifelse(grepl("*BIO COMPANY*",AccDB$BookingText,ignore.case = TRUE),'BIO COMPANY',AccDB$Company)
   AccDB$Company=ifelse(grepl("*CINESTAR*",AccDB$BookingText,ignore.case = TRUE),'CINESTAR',AccDB$Company)
@@ -174,23 +190,20 @@ if (!exists("AccDB"))
   AccDB$Company=ifelse(grepl("*IKEA*",AccDB$BookingText,ignore.case = TRUE),'IKEA',AccDB$Company)
   AccDB$Company=ifelse(grepl("*DE12100400000109234501*",AccDB$BookingText,ignore.case = TRUE),'G+B Housing',AccDB$Company)
   
-  rm(temp)
-  #ConsolidatedOpp = rbind(OppClosed,OppOpen)
-  #Regionpal=c("forestgreen", "darkorange", "deepskyblue", "dimgray")
-  ################################################# Preparing Geo Code fetching####################################
+  #Exceptions
+  # Reporting ticket amount
+  AccDB$Company=ifelse(AccDB$Amount==1490.55,'Lufthansa',AccDB$Company)
   
-  ###### Binding Branch & disctrict based on Branchcode OrigOffice
-  # BranchCity=unique(ConsolidatedOpp$Branch.Office)
-  # BranchCity=BranchCity[!is.na(BranchCity)]
-  # Bcity=data.frame(BranchCity,stringsAsFactors = FALSE)
-  # Bcity=sub(" MP", "", Bcity$BranchCity, fixed = TRUE)
-  # Bcity=unique(Bcity)
-  # Bcity=data.frame(Bcity)
-  # 
-  # geocodes <- geocode(as.character(Bcity$Bcity),output = "more")
-  # geocodes = geocodes %>%
-  #   select(lat,lon,administrative_area_level_1)
-  # Bcity <- data.frame(Bcity[,1],geocodes,stringsAsFactors = FALSE)
-  # write.csv(Bcity,file="BranchGeoCode.csv",row.names = FALSE)
-  # 
+  #Estimate Inputs
+  ValTransactionYear=unique(AccDB$TransactionYear[!is.na(AccDB$TransactionYear)])
+  ValTransactionMonth=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+  StandardExpenses=c('G+B Housing','India Citibank','Commerz Bank','HOME Internet','VATTENFALL','Deutsche Bank','Post Bank','KITA','BVG')
+  tmp = AccDB %>% filter(!Company %in% StandardExpenses) %>% select(Company) %>% unique() %>% arrange(Company)
+  IrregularExpenses=tmp$Company
+  #
+  rm(tmp)
+  rm(temp)  
+  #
+  #
+  
 }

@@ -22,12 +22,17 @@ shinyServer(function(input, output,session) {
     #   arrange(desc(Region))
   })
   
-  reactdataAccDB_ByYearMon=reactive({
+  reactdataAccDB_MrktAnalysysByYearMon=reactive({
     AccDB%>%
       filter(TransactionYear==input$SelYear)%>%
       filter(TransactionMonth==input$SelMonth)
   })
+  reactdataAccDB_CompReportByYear=reactive({
+    AccDB%>%
+      filter(TransactionYear==input$ComReportSelYear)
+  })
     #Month Based on Year selected
+  # reactdataAccDB_CompReportByYearMon
   observe({
     dt=AccDB %>%
       filter(TransactionYear==input$SelYear)
@@ -44,7 +49,9 @@ shinyServer(function(input, output,session) {
   })
   ######################################## Market Analysis ############################################
   output$HighIncome <- renderValueBox({
-    dt=reactdataAccDB_ByYearMon()
+    dt=reactdataAccDB_MrktAnalysysByYearMon() %>%
+      filter(Category=='Income')
+   
     valueBox(
       paste0(max(dt$Amount), " EUR"), paste0("Highest Income ",dt$Company[match(max(dt$Amount),dt$Amount)]), icon = icon("list"),
       # paste0("2254", "EUR"), "Highest Income", icon = icon("list"),
@@ -53,24 +60,24 @@ shinyServer(function(input, output,session) {
   })
 
   output$HighExp <- renderValueBox({
-    dt=reactdataAccDB_ByYearMon()
+    dt=reactdataAccDB_MrktAnalysysByYearMon()%>%
+      filter(Category=='Expense') %>%
+      filter(!Company %in% StandardExpenses )
     valueBox(
-      paste0(min(dt$Amount,na.rm = TRUE), " EUR"), paste0("Highest Expense ",dt$Company[match(min(dt$Amount),dt$Amount)]), icon = icon("list"),
+      paste0(max(dt$Amount,na.rm = TRUE), " EUR"), paste0("Highest Expense ",dt$Company[match(max(dt$Amount),dt$Amount)]), icon = icon("list"),
       # paste0("2254", "EUR"), "Highest Income", icon = icon("list"),
       color = "purple"
     )
   })
-  
+
   output$MonthlyTrack<-renderPlotly({
   
     #Case 1,)
-      dt=reactdataAccDB_ByYearMon()%>%
+      dt=reactdataAccDB_MrktAnalysysByYearMon()%>%
         filter(Category=="Expense") %>%
-        filter(!grepl("*Cash*",TransactionType,ignore.case = TRUE)) %>%
-        filter(Company!='G+B Housing' & Company!='India Citibank' ) %>%
+        filter(!Company %in% StandardExpenses  ) %>%
         select(TransactionDate,Amount,Company) %>%
         group_by(TransactionDate)
-      #     plot_ly(dt, x = dt$Company, y = dt$Amount, name = 'MonthlyTrack', type = 'scatter')
    
    plot_ly() %>%
       add_trace(dt, labels=dt$Company, type='pie', values=dt$Amount) %>%
@@ -98,6 +105,52 @@ shinyServer(function(input, output,session) {
     #columns=c("Region","Load","Speed","cnt")
     datatable(Dt,filter="bottom",class = 'cell-border stripe',rownames = FALSE)
   })
+  ##################################### Companies Report View  #####################################################
+  output$CompanyReport_Std_MonthlyTrack<-renderPlotly({
+
+    dt2017= AccDB %>%
+      filter(TransactionYear==2017) %>%
+      group_by(TransactionMonth) %>%
+      filter(Category=="Expense") %>%
+      # filter(Company == 'India Citibank') %>%
+      filter(Company == input$ComReportSelStdComp) %>%
+      select(TransactionMonth,Amount,Company) %>%
+      summarise(Amount=sum(Amount))
+    dt2018= AccDB %>%
+      filter(TransactionYear==2018) %>%
+      group_by(TransactionMonth) %>%
+      filter(Category=="Expense") %>%
+      # filter(Company == 'India Citibank') %>%
+      filter(Company == input$ComReportSelStdComp) %>%
+      select(TransactionMonth,Amount,Company) %>%
+      summarise(Amount=sum(Amount))
+        
+      
+    plot_ly() %>%
+      add_trace(dt2017, x=dt2017$TransactionMonth,y=dt2017$Amount,type = 'bar',text = dt2017$Amount, textposition = 'auto',name='2017') %>%
+      add_trace(dt2018, x=dt2018$TransactionMonth,y=dt2018$Amount,type = 'bar',text = dt2018$Amount, textposition = 'auto',name='2018') %>%
+      layout(p, title=paste0("Standard Expense for ",input$ComReportSelStdComp, " ", input$ComReportSelYear))
+    
+  })
+  
+  output$CompanyReport_Irr_MonthlyTrack<-renderPlotly({
+    
+    dt=reactdataAccDB_CompReportByYear()%>%
+      # AccDB %>%
+      #   filter(TransactionYear==2018) %>%
+      group_by(TransactionMonth) %>%
+      filter(Category=="Expense") %>%
+      # filter(Company == 'India Citibank') %>%
+      filter(Company == input$ComReportSelIrrComp) %>%
+      select(TransactionMonth,Amount,Company) %>%
+      summarise(Amount=sum(Amount))
+    
+    plot_ly() %>%
+      add_trace(dt, x=dt$TransactionMonth,y=dt$Amount,type = 'bar',text = dt$Amount, textposition = 'auto') %>%
+      layout(p, title=paste0("Irregular Expense for ",input$ComReportSelStdComp, " ", input$ComReportSelYear))
+    
+  })
+  
   ##################################### Missing items summary View #####################################################
   output$tabmissingSummary = renderDataTable({
     Dt=data.frame(AccDB)

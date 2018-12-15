@@ -30,12 +30,12 @@ shinyUI(
     dashboardSidebar(
       sidebarMenu(
         # menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+        menuItem("Company Report", tabName = "CompanyReportview", icon = icon("map-marker")),
         menuItem("Market Analysis", tabName = "MarktAnalysis", icon = icon("balance-scale")),
+        menuItem("Circling Amount", tabName = "ElevAnalysis", icon = icon("map-marker")),
         menuItem("Overall by Companies", tabName = "DataOverallCompanies", icon = icon("bars")),
         # menuItem("Price Analysis", tabName = "OppAnalysis", icon = icon("inr")),
         menuItem("Data View", tabName = "DataView", icon = icon("th")),
-        menuItem("Elevator Volumes (ALL)", tabName = "ElevVolumes", icon = icon("map-marker")),
-        menuItem("Elevator Analysis", tabName = "ElevAnalysis", icon = icon("map-marker")),
         menuItem("Price Analysis", tabName = "priceAnalysis", icon = icon("inr")),
         menuItem("TOP SELLER", tabName = "UnitAnalysis", icon = icon("bar-chart")),
         menuItem("Missing Data", tabName = "missingSummary", icon = icon("warning"))
@@ -44,28 +44,7 @@ shinyUI(
     ),
     dashboardBody(
       tabItems(
-        #### DF summary ########
-        # tabItem(tabName = "missingSummary",
-        #         fluidRow(
-        #           box(title = "Missing Data Summary (Closed opportunities)",width=12,status = "warning", solidHeader = TRUE,collapsible = FALSE,collapsed = FALSE,
-        #               dataTableOutput("tabmissingSummary"))
-        #         )
-        #       ),
-        # First tab content
-        # tabItem(tabName = "dashboard",
-        #         fluidRow(
-        #           selectInput(inputId = "MarSegChoose","Market Segment",ClosedMarketSeg,multiple = FALSE),
-        #          valueBoxOutput("TotalOpp",width=6)
-        #          # ,
-        #          # valueBoxOutput("ClosedSuccess"),
-        # 
-        #         # valueBoxOutput("ClosedSuccessPer")
-        #          ),#fluidrow ends
-        #         fluidRow(
-        #           box(plotlyOutput("DashSuccessChart", height = 350),status = "success"),
-        #           box(plotlyOutput("TopCompetitor", height = 350),status = "warning")
-        #         )#Fluid row ends
-        # ), 
+        ########################################### Market Analysis ###############
         tabItem(tabName = "MarktAnalysis",
                 fluidRow(
                  box(selectInput(inputId = "SelYear","Year",ValTransactionYear,multiple = FALSE)),
@@ -87,7 +66,8 @@ shinyUI(
                   column(6,plotlyOutput("MonthlyTrack",width = 600))
                 )
         ),
-          
+       
+        ########################################### Data View  ###############
         tabItem(tabName = "DataView",
                 fluidRow(
                   box(title = "Overall",width=12,status = "warning", solidHeader = TRUE,collapsible = TRUE,collapsed = FALSE,
@@ -95,14 +75,41 @@ shinyUI(
                 )
               ),
         # Second tab content
+        
+        ########################################### Data View Overall Companies  ###############
+        # Third tab content starts
         tabItem(tabName = "DataOverallCompanies",
                 fluidRow(
                   box(title = "Overall",width=12,status = "warning", solidHeader = TRUE,collapsible = TRUE,collapsed = FALSE,
                       dataTableOutput("tabOverAllMarket"))
-        )# Third tab content ends
-        ),
+        )
+        ),# Third tab content ends
         
-        #### DF summary ########
+        
+        ########################################### Companies Report View  ###############
+        # Fourth tab content starts
+        tabItem(tabName = "CompanyReportview",
+                fluidRow(
+                  box(selectInput(inputId = "ComReportSelYear","Year",ValTransactionYear,multiple = FALSE)),
+                  
+                  box(selectInput(inputId = "ComReportSelMonth","Month",ValTransactionMonth,multiple = FALSE))
+                ),
+                fluidRow(
+                  box(selectInput(inputId = "ComReportSelStdComp","Standard Expenses Company", StandardExpenses ,multiple = FALSE)),
+                  
+                  box(selectInput(inputId = "ComReportSelIrrComp","Irregular Expenses Company",IrregularExpenses,multiple = FALSE))
+                ),
+                fluidRow(
+                  
+                  # valueBoxOutput("ClosedSuccessPer")
+                ),
+                fluidRow(
+                  column(6,plotlyOutput("CompanyReport_Std_MonthlyTrack",width = 600)),
+                  column(6,plotlyOutput("CompanyReport_Irr_MonthlyTrack",width = 600))
+                )
+        ),# Fourth tab content ends
+        ########################################### Missing Summary View   ###############
+        
         tabItem(tabName = "missingSummary",
                 fluidRow(
                   box(title = "Missing Data Summary",width=12,status = "warning", solidHeader = TRUE,collapsible = FALSE,collapsed = FALSE,
