@@ -6,11 +6,8 @@
 # 
 #    http://shiny.rstudio.com/
 #
-
-
 # Define server logic required to draw a histogram
 shinyServer(function(input, output,session) {
-  
   #DataFrame for Closed + Open Opp  & selected Market
   reactdataAccountDB=reactive({
     AccDB%>%
@@ -48,22 +45,22 @@ shinyServer(function(input, output,session) {
        unique(TransactionMonth[!is.na(TransactionMonth)])
   })
   ######################################## Market Analysis ############################################
-  output$HighIncome <- renderValueBox({
+  output$HighIncome <- shinydashboard::renderValueBox({
     dt=reactdataAccDB_MrktAnalysysByYearMon() %>%
       filter(Category=='Income')
    
-    valueBox(
+    shinydashboard::valueBox(
       paste0(max(dt$Amount), " EUR"), paste0("Highest Income ",dt$Company[match(max(dt$Amount),dt$Amount)]), icon = icon("list"),
       # paste0("2254", "EUR"), "Highest Income", icon = icon("list"),
       color = "purple"
     )
   })
 
-  output$HighExp <- renderValueBox({
+  output$HighExp <- shinydashboard::renderValueBox({
     dt=reactdataAccDB_MrktAnalysysByYearMon()%>%
       filter(Category=='Expense') %>%
       filter(!Company %in% StandardExpenses )
-    valueBox(
+    shinydashboard::valueBox(
       paste0(max(dt$Amount,na.rm = TRUE), " EUR"), paste0("Highest Expense ",dt$Company[match(max(dt$Amount),dt$Amount)]), icon = icon("list"),
       # paste0("2254", "EUR"), "Highest Income", icon = icon("list"),
       color = "purple"
@@ -108,28 +105,27 @@ shinyServer(function(input, output,session) {
   ##################################### Companies Report View  #####################################################
   output$CompanyReport_Std_MonthlyTrack<-renderPlotly({
 
-    dt2017= AccDB %>%
-      filter(TransactionYear==2017) %>%
+    dt= AccDB %>%
+      filter(TransactionYear==input$ComReportSelYear) %>%
       group_by(TransactionMonth) %>%
       filter(Category=="Expense") %>%
       # filter(Company == 'India Citibank') %>%
       filter(Company == input$ComReportSelStdComp) %>%
       select(TransactionMonth,Amount,Company) %>%
       summarise(Amount=sum(Amount))
-    dt2018= AccDB %>%
-      filter(TransactionYear==2018) %>%
-      group_by(TransactionMonth) %>%
-      filter(Category=="Expense") %>%
-      # filter(Company == 'India Citibank') %>%
-      filter(Company == input$ComReportSelStdComp) %>%
-      select(TransactionMonth,Amount,Company) %>%
-      summarise(Amount=sum(Amount))
-        
-      
-    plot_ly() %>%
-      add_trace(dt2017, x=dt2017$TransactionMonth,y=dt2017$Amount,type = 'bar',text = dt2017$Amount, textposition = 'auto',name='2017') %>%
-      add_trace(dt2018, x=dt2018$TransactionMonth,y=dt2018$Amount,type = 'bar',text = dt2018$Amount, textposition = 'auto',name='2018') %>%
-      layout(p, title=paste0("Standard Expense for ",input$ComReportSelStdComp, " ", input$ComReportSelYear))
+    
+     dt_By_Segment= AccDB %>%
+       filter(TransactionYear==input$ComReportSelYear) %>%
+       filter(Segment==input$ComReportSelSegment) %>%
+       group_by(TransactionMonth) %>%
+       filter(Category=="Expense") %>%
+       select(TransactionMonth,Amount,Segment) %>%
+       summarise(Amount=sum(Amount))
+  
+    plot_ly(dt_By_Segment) %>%   
+      add_lines(x=dt_By_Segment$TransactionMonth,y=dt_By_Segment$Amount,name = input$ComReportSelSegment, line = list(shape = "spline")) %>%
+      add_trace(dt, x=dt$TransactionMonth,y=dt$Amount,type = 'bar',text = dt$Amount, textposition = 'auto',name=input$ComReportSelYear) %>%
+      layout(title=paste0("Standard Expense for ",input$ComReportSelStdComp, " ", input$ComReportSelYear))
     
   })
   
@@ -147,9 +143,28 @@ shinyServer(function(input, output,session) {
     
     plot_ly() %>%
       add_trace(dt, x=dt$TransactionMonth,y=dt$Amount,type = 'bar',text = dt$Amount, textposition = 'auto') %>%
-      layout(p, title=paste0("Irregular Expense for ",input$ComReportSelStdComp, " ", input$ComReportSelYear))
+      layout(p, title=paste0("Irregular Expense for ",input$ComReportSelIrrComp, " ", input$ComReportSelYear))
     
   })
+  ##################################### Circling  #####################################################
+  output$CyberportLaptop = renderGauge({
+    
+    ReturnDf=AccDB %>%
+      filter(Segment=="Friends") %>%
+      filter(str_detect(BookingText,'laptop')) %>%
+      summarise(Amt=sum(Amount))
+   
+    gauge(ReturnDf$Amt, min = 0, max = 569, symbol = 'EUR',label = paste("Laptop Cyberport"), gaugeSectors(
+      success = c(450,569), warning = c(250, 450), danger = c(0, 250)
+    ))
+  })
+  
+  # output$plt1 <- flexdashboard::renderGauge({
+  #   gauge(56, min = 0, max = 100, symbol = '%', gaugeSectors(
+  #     success = c(100, 6), warning = c(5,1), danger = c(0, 1), colors = c("#CC6699")
+  #   ))
+  #   
+  # })
   
   ##################################### Missing items summary View #####################################################
   output$tabmissingSummary = renderDataTable({

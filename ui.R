@@ -32,7 +32,7 @@ shinyUI(
         # menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
         menuItem("Company Report", tabName = "CompanyReportview", icon = icon("map-marker")),
         menuItem("Market Analysis", tabName = "MarktAnalysis", icon = icon("balance-scale")),
-        menuItem("Circling Amount", tabName = "ElevAnalysis", icon = icon("map-marker")),
+        menuItem("Circling Amount", tabName = "CirclingAmt", icon = icon("map-marker")),
         menuItem("Overall by Companies", tabName = "DataOverallCompanies", icon = icon("bars")),
         # menuItem("Price Analysis", tabName = "OppAnalysis", icon = icon("inr")),
         menuItem("Data View", tabName = "DataView", icon = icon("th")),
@@ -56,9 +56,9 @@ shinyUI(
                  ),
                  fluidRow(
               
-                 valueBoxOutput("HighIncome",width=6),
+                   shinydashboard::valueBoxOutput("HighIncome",width=6),
                
-                 valueBoxOutput("HighExp",width=6)
+                   shinydashboard::valueBoxOutput("HighExp",width=6)
 
                 # valueBoxOutput("ClosedSuccessPer")
                  ),
@@ -92,7 +92,7 @@ shinyUI(
                 fluidRow(
                   box(selectInput(inputId = "ComReportSelYear","Year",ValTransactionYear,multiple = FALSE)),
                   
-                  box(selectInput(inputId = "ComReportSelMonth","Month",ValTransactionMonth,multiple = FALSE))
+                  box(selectInput(inputId = "ComReportSelSegment","Segment of Expense",ValSegment,multiple = FALSE))
                 ),
                 fluidRow(
                   box(selectInput(inputId = "ComReportSelStdComp","Standard Expenses Company", StandardExpenses ,multiple = FALSE)),
@@ -108,6 +108,13 @@ shinyUI(
                   column(6,plotlyOutput("CompanyReport_Irr_MonthlyTrack",width = 600))
                 )
         ),# Fourth tab content ends
+        
+        ########################################### Circling Amount View   ###############
+        tabItem(tabName = "CirclingAmt",
+                fluidRow(
+                  column(6,box(flexdashboard::gaugeOutput("CyberportLaptop"),width=12,title="Cyberport Laptop"))
+                )
+        ),
         ########################################### Missing Summary View   ###############
         
         tabItem(tabName = "missingSummary",
