@@ -63,8 +63,12 @@ shinyUI(
                 # valueBoxOutput("ClosedSuccessPer")
                  ),
                 fluidRow(
-                  column(6,plotlyOutput("MonthlyTrack",width = 600))
-                )
+                  box(column(6,plotlyOutput("MonthlyTrack",width = 600))),
+                  box(column(6,plotlyOutput("MonthlyDayTrack",width = 600)))
+                ),
+                fluidRow(
+                  box(column(6,plotlyOutput("YearlyDayTrack",width = 600)))
+                  )
         ),
        
         ########################################### Data View  ###############

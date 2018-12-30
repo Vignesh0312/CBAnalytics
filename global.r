@@ -28,6 +28,7 @@ if (!exists("AccDB"))
 {
   f <- list(family = "Courier New, monospace",size = 18,color = "#7f7f7f")
   KeywordMapping = read.xlsx("KeywordMapping.xlsx",sheet = 1,startRow = 1, colNames = TRUE,detectDates = TRUE,rowNames = FALSE)
+  CitiAccDB = read.xlsx("Citibank.xlsx",sheet = 1,startRow = 1, colNames = TRUE,detectDates = TRUE,rowNames = FALSE)
   files <- list.files(path ="D:/STUDIES/01_DataAnalytics/CBAnalytics/Data",pattern = ".CSV")
   temp <- lapply(files, fread,sep=",",na.strings="")
   AccDB <- rbindlist(temp)
@@ -44,16 +45,24 @@ if (!exists("AccDB"))
   rm(OldNames,NewNames)
   #
   #Change Dates
-  as.Date(AccDB$TransactionDate, "%d.%m.%Y")
-  as.Date(AccDB$ValueDate, "%d.%m.%Y")
+  CitiAccDB$Withdrawals=as.numeric(CitiAccDB$Withdrawals)
+  CitiAccDB$Deposits=as.numeric(CitiAccDB$Deposits)
+  AccDB$TransactionDate=as.Date(AccDB$TransactionDate, "%d.%m.%Y")
+  AccDB$ValueDate=as.Date(AccDB$ValueDate, "%d.%m.%Y")
+  
+  CitiAccDB$Date= parse_date_time(x = CitiAccDB$Date,orders = c("Y-m-d","d/m/Y"),locale = "eng")
+  
   tempDate=dmy(AccDB$TransactionDate)
   AccDB$TransactionYear= year(tempDate)
   AccDB$TransactionMonth= month(tempDate,label = TRUE)
+  AccDB$TransactionDay<- weekdays(dmy(AccDB$TransactionDate))
   rm(tempDate)
   #
   # InsuranceExpenses=
   #
   AccDB$Category=ifelse(AccDB$Amount < 0,'Expense','Income')
+  CitiAccDB$Category=ifelse(CitiAccDB$Withdrawals > 0,"Expense","Income")
+  
   AccDB$Amount=abs(AccDB$Amount)
   
   AccDB=AccDB %>% fuzzy_inner_join(KeywordMapping, by = c("BookingText" = "SearchKeyword"), match_fun = str_detect)
@@ -65,6 +74,7 @@ if (!exists("AccDB"))
   #Estimate Inputs
   ValTransactionYear=unique(AccDB$TransactionYear[!is.na(AccDB$TransactionYear)])
   ValTransactionMonth=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+  ValTransactionDay=c("Mon","Tue","Wed","Thu","Fri","Sar","Sun")
   StandardExpenses=c('G+B Housing','India Citibank','Commerz Bank','HOME Internet','VATTENFALL','Deutsche Bank','Post Bank','KITA','BVG')
   ValSegment = AccDB %>% select(Segment) %>% unique()
   tmp = AccDB %>% filter(!Company %in% StandardExpenses) %>% select(Company) %>% unique() %>% arrange(Company)

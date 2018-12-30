@@ -24,6 +24,10 @@ shinyServer(function(input, output,session) {
       filter(TransactionYear==input$SelYear)%>%
       filter(TransactionMonth==input$SelMonth)
   })
+  reactdataAccDB_MrktAnalysysByYear=reactive({
+    AccDB%>%
+      filter(TransactionYear==input$SelYear)
+  })
   reactdataAccDB_CompReportByYear=reactive({
     AccDB%>%
       filter(TransactionYear==input$ComReportSelYear)
@@ -69,16 +73,64 @@ shinyServer(function(input, output,session) {
 
   output$MonthlyTrack<-renderPlotly({
   
-    #Case 1,)
+    #Case 1, Monthly analysis for month)
       dt=reactdataAccDB_MrktAnalysysByYearMon()%>%
         filter(Category=="Expense") %>%
         filter(!Company %in% StandardExpenses  ) %>%
         select(TransactionDate,Amount,Company) %>%
         group_by(TransactionDate)
    
+      dt1=reactdataAccDB_MrktAnalysysByYearMon()%>%
+        filter(Category=="Expense") %>%
+        filter(!Company %in% StandardExpenses) %>%
+        group_by(TransactionMonth) %>%
+        summarise(Amt=sum(Amount,na.rm = TRUE))
+      
    plot_ly() %>%
       add_trace(dt, labels=dt$Company, type='pie', values=dt$Amount) %>%
-      layout(p, title=paste0("Expense for ",input$SelMonth, " ", input$SelYear))
+      layout(p, title=paste0("Expense for ",input$SelMonth, " ", input$SelYear, " = ",dt1$Amt ,'EUR'))
+    
+  })  
+  output$MonthlyDayTrack<-renderPlotly({
+  
+    #Case 2,daily analysis for month)
+      dt=reactdataAccDB_MrktAnalysysByYearMon()%>%
+        filter(Category=="Expense") %>%
+        filter(!Company %in% StandardExpenses  ) %>%
+        select(TransactionDay,Amount,Company) %>%
+        group_by(TransactionDay) %>%
+        summarise(Amt=sum(Amount,na.rm = TRUE)) %>%
+          arrange(desc(TransactionDay))
+      
+      dt$TransactionDay <- factor(dt$TransactionDay, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+      
+   plot_ly(dt) %>%   
+     # add_lines(x=dt$TransactionDay,y=dt$Amt,name = input$SelMonth, line = list(shape = "spline")) %>%
+     add_trace(x=dt$TransactionDay,y=dt$Amt,name = input$SelMonth, type='bar',text = dt$Amt,textposition = 'auto') %>%
+     # add_trace(dt, x=dt$TransactionMonth,y=dt$Amount,type = 'bar',text = dt$Amount, textposition = 'auto',name=input$ComReportSelYear) %>%
+     layout(title=paste0("Expense for ",input$SelMonth, " ", input$SelYear ," =",sum(dt$Amt)," EUR"))
+   
+    
+  })
+  output$YearlyDayTrack<-renderPlotly({
+    
+    #Case 3,daily analysis for Year)
+    dt=reactdataAccDB_MrktAnalysysByYear()%>%
+      filter(Category=="Expense") %>%
+      filter(!Company %in% StandardExpenses  ) %>%
+      select(TransactionDay,Amount,Company) %>%
+      group_by(TransactionDay) %>%
+      summarise(Amt=sum(Amount,na.rm = TRUE)) %>%
+      arrange(desc(TransactionDay))
+    
+    dt$TransactionDay <- factor(dt$TransactionDay, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+    
+    plot_ly(dt) %>%   
+      # add_lines(x=dt$TransactionDay,y=dt$Amt,name = input$SelMonth, line = list(shape = "spline")) %>%
+      add_trace(x=dt$TransactionDay,y=dt$Amt,name = input$SelMonth, type='bar',text = dt$Amt,textposition = 'auto') %>%
+      # add_trace(dt, x=dt$TransactionMonth,y=dt$Amount,type = 'bar',text = dt$Amount, textposition = 'auto',name=input$ComReportSelYear) %>%
+      layout(title=paste0("Expense for ",input$SelYear, " =",sum(dt$Amt)," EUR"))
+    
     
   })
   ######################################## Overall Companies #####################################################
