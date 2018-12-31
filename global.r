@@ -53,9 +53,9 @@ if (!exists("AccDB"))
   CitiAccDB$Date= parse_date_time(x = CitiAccDB$Date,orders = c("Y-m-d","d/m/Y"),locale = "eng")
   
   tempDate=dmy(AccDB$TransactionDate)
-  AccDB$TransactionYear= year(tempDate)
-  AccDB$TransactionMonth= month(tempDate,label = TRUE)
-  AccDB$TransactionDay<- weekdays(dmy(AccDB$TransactionDate))
+  AccDB$TransactionYear= year(AccDB$TransactionDate)
+  AccDB$TransactionMonth= month(AccDB$TransactionDate,label = TRUE)
+  AccDB$TransactionDay<- weekdays(AccDB$TransactionDate)
   rm(tempDate)
   #
   # InsuranceExpenses=
