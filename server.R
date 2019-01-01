@@ -198,6 +198,27 @@ shinyServer(function(input, output,session) {
       layout(p, title=paste0("Irregular Expense for ",input$ComReportSelIrrComp, " ", input$ComReportSelYear))
     
   })
+  output$CompanyReport_Irr_DailyTrack<-renderPlotly({
+      dt=reactdataAccDB_CompReportByYear()%>%
+      filter(Category=="Expense") %>%
+      filter(!Company %in% StandardExpenses  ) %>%
+      filter(Company == input$ComReportSelIrrComp) %>%
+      select(TransactionDay,Amount) %>%
+      group_by(TransactionDay) %>%
+      summarise(Amt=sum(Amount,na.rm = TRUE)) %>%
+      arrange(desc(TransactionDay))
+    
+    dt$TransactionDay <- factor(dt$TransactionDay, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+    
+    plot_ly(dt) %>%   
+      # add_lines(x=dt$TransactionDay,y=dt$Amt,name = input$SelMonth, line = list(shape = "spline")) %>%
+      add_trace(x=dt$TransactionDay,y=dt$Amt,name = input$SelMonth, type='bar',text = dt$Amt,textposition = 'auto') %>%
+      # add_trace(dt, x=dt$TransactionMonth,y=dt$Amount,type = 'bar',text = dt$Amount, textposition = 'auto',name=input$ComReportSelYear) %>%
+      layout(p, title=paste0("Irregular Expense for ",input$ComReportSelIrrComp, " ", input$ComReportSelYear," =",sum(dt$Amt)," EUR"))
+      # layout(title=paste0("Expense for ",input$SelMonth, " ", input$SelYear ," =",sum(dt$Amt)," EUR"))
+    
+    
+  })
   ##################################### Circling  #####################################################
   output$CyberportLaptop = renderGauge({
     

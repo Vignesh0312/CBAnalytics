@@ -104,12 +104,12 @@ shinyUI(
                   box(selectInput(inputId = "ComReportSelIrrComp","Irregular Expenses Company",IrregularExpenses,multiple = FALSE))
                 ),
                 fluidRow(
-                  
+                  column(6,plotlyOutput("CompanyReport_Std_MonthlyTrack",width = 600)),
+                  column(6,plotlyOutput("CompanyReport_Irr_MonthlyTrack",width = 600))
                   # valueBoxOutput("ClosedSuccessPer")
                 ),
                 fluidRow(
-                  column(6,plotlyOutput("CompanyReport_Std_MonthlyTrack",width = 600)),
-                  column(6,plotlyOutput("CompanyReport_Irr_MonthlyTrack",width = 600))
+                  column(6,plotlyOutput("CompanyReport_Irr_DailyTrack",width = 600))
                 )
         ),# Fourth tab content ends
         
