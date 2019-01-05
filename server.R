@@ -216,7 +216,7 @@ shinyServer(function(input, output,session) {
       # add_trace(dt, x=dt$TransactionMonth,y=dt$Amount,type = 'bar',text = dt$Amount, textposition = 'auto',name=input$ComReportSelYear) %>%
       layout(p, title=paste0("Irregular Expense for ",input$ComReportSelIrrComp, " ", input$ComReportSelYear," =",sum(dt$Amt)," EUR"))
       # layout(title=paste0("Expense for ",input$SelMonth, " ", input$SelYear ," =",sum(dt$Amt)," EUR"))
-    
+  
     
   })
   ##################################### Circling  #####################################################
