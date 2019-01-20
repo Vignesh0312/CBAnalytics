@@ -24,12 +24,30 @@ if (dir.exists("D:/STUDIES/01_DataAnalytics/CBAnalytics/Data"))
   setwd("D:/STUDIES/01_DataAnalytics/CBAnalytics/Data")
 }
 
+
+if (dir.exists("C:/Vignesh/Analytics/CBAnalytics/Data/CBAnalyticsData"))
+{
+  setwd("C:/Vignesh/Analytics/CBAnalytics/Data/CBAnalyticsData")
+}
+
+
 if (!exists("AccDB"))
 {
   f <- list(family = "Courier New, monospace",size = 18,color = "#7f7f7f")
   KeywordMapping = read.xlsx("KeywordMapping.xlsx",sheet = 1,startRow = 1, colNames = TRUE,detectDates = TRUE,rowNames = FALSE)
   CitiAccDB = read.xlsx("Citibank.xlsx",sheet = 1,startRow = 1, colNames = TRUE,detectDates = TRUE,rowNames = FALSE)
-  files <- list.files(path ="D:/STUDIES/01_DataAnalytics/CBAnalytics/Data",pattern = ".CSV")
+  if (dir.exists("D:/STUDIES/01_DataAnalytics/CBAnalytics/Data"))
+  {
+    files <- list.files(path ="D:/STUDIES/01_DataAnalytics/CBAnalytics/Data",pattern = ".CSV")
+  }
+  
+  
+  if (dir.exists("C:/Vignesh/Analytics/CBAnalytics/Data/CBAnalyticsData"))
+  {
+    files <- list.files(path ="C:/Vignesh/Analytics/CBAnalytics/Data/CBAnalyticsData",pattern = ".CSV")
+
+  }
+ 
   temp <- lapply(files, fread,sep=",",na.strings="")
   AccDB <- rbindlist(temp)
   #Column based duplicate remove because special CHARS in booking text makes difference
